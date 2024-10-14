@@ -3,6 +3,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'fire
 import { db } from '../firebase/firebase';
 import { ref as dbRef, update } from 'firebase/database'; // Use update for editing
 import EndUseInput from './EndUserInput';
+import { deleteObject } from "firebase/storage"; // Import deleteObject
 
 const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, setSpeciesName] = useState(species?.name || '');
 
@@ -155,6 +156,36 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   const addNewUse = () => {
     setEndUses([...endUses, { useName: '', useDescription: '' }]);
   };
+ 
+// Function to handle the deletion of usage images
+const handleDeleteUsageImage = async (index, imageUrl) => {
+  const speciesId = species.id;
+  
+  try {
+    // Reference to the image in Firebase storage
+    const storage = getStorage();
+    const imageRef = storageRef(storage, imageUrl);
+
+    // Delete the image from Firebase storage
+    await deleteObject(imageRef);
+
+    // Remove the image URL from the state
+    const updatedUsageImages = [...existingUsageImages];
+    updatedUsageImages.splice(index, 1);
+    setExistingUsageImages(updatedUsageImages);
+
+    // Update the database to reflect the deleted image
+    const speciesRef = dbRef(db, `species/${speciesId}`);
+    await update(speciesRef, {
+      usageImages: updatedUsageImages,
+    });
+
+    console.log(`Deleted image at index ${index}`);
+  } catch (error) {
+    console.error("Error deleting image:", error);
+  }
+};
+
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-md m-20">
@@ -292,7 +323,8 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       </div>
 
       {/* Usage Images */}
-      <div className="mb-4">
+     {/* Usage Images */}
+<div className="mb-4">
   <label className="block text-gray-700">Usage Images</label>
   {existingUsageImages.length > 0 ? (
     <div>
@@ -300,11 +332,22 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       {existingUsageImages.map((imgUrl, index) => (
         <div key={index} className="flex items-center mt-2">
           <img src={imgUrl} alt={`Usage ${index}`} className="w-32" />
+          
+          {/* Delete button next to each image */}
+          <button
+            type="button"
+            className="ml-4 text-red-500"
+            onClick={() => handleDeleteUsageImage(index, imgUrl)}
+          >
+            Delete
+          </button>
+
+          {/* Input for replacing existing image */}
           <input 
             type="file" 
             onChange={(e) => {
               const updatedImages = [...usageImages];
-              updatedImages[index] = e.target.files[0]; // Update only the specific image
+              updatedImages[index] = e.target.files[0]; // Update the specific image
               setUsageImages(updatedImages);
             }}
             className="ml-4"
@@ -315,6 +358,8 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   ) : (
     <p>No existing images</p>
   )}
+
+  {/* Add new usage images */}
   <input 
     type="file" 
     multiple 
@@ -323,6 +368,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     placeholder="Add new usage images"
   />
 </div>
+
 
   
 
