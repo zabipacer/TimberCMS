@@ -62,10 +62,10 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
       color,
       grain,
       Durability,
-      MOR: mor,
-      MOE: moe,
-      Janka,
+      
+      Janka: mor,
       Endgrain,
+      workability,
       grainImages: grainImageUrls, // Save multiple grain images
       usageImages: usageImageUrls,
       endUses // Save end uses properly
@@ -81,9 +81,8 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
       color,
       grain,
       Durability,
-      MOR: mor,
-      MOE: moe,
-      Janka,
+      Janka: mor,
+      
       Endgrain,
       grainImages: grainImageUrls,
       usageImages: usageImageUrls,
@@ -146,7 +145,7 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
   />
 </div>
 <div className="mb-4">
-  <label className="block text-gray-700">description</label>
+  <label className="block text-gray-700">Scientific name</label>
   <input
     type="text"
     value={description}
@@ -196,7 +195,7 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
   />
 </div>
 <div className="mb-4">
-  <label className="block text-gray-700">Workability</label>
+  <label className="block text-gray-700">Texture</label>
   <input
     type="text"
     value={workability}
@@ -206,7 +205,7 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
   />
 </div>
 <div className="mb-4">
-  <label className="block text-gray-700">MOR</label>
+  <label className="block text-gray-700">Janka Hardness</label>
   <input
     type="text"
     value={mor}
@@ -215,28 +214,9 @@ const SpeciesForm = ({ onSubmit, toggleForm }) => {
     required
   />
 </div>
+
 <div className="mb-4">
-  <label className="block text-gray-700">MOE</label>
-  <input
-    type="text"
-    value={moe}
-    onChange={(e) => setMoe(e.target.value)}
-    className="w-full p-2 border border-gray-300 rounded-md"
-    required
-  />
-</div>
-<div className="mb-4">
-  <label className="block text-gray-700">Janka Hardness '(Side)</label>
-  <input
-    type="text"
-    value={Janka}
-    onChange={(e) => setJanka(e.target.value)}
-    className="w-full p-2 border border-gray-300 rounded-md"
-    required
-  />
-</div>
-<div className="mb-4">
-  <label className="block text-gray-700">Janka Hardness (End Grain)</label>
+  <label className="block text-gray-700">Average Dried Weight(kg/m³)</label>
   <input
     type="text"
     value={Endgrain}

@@ -92,9 +92,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       color,
       grain,
       Durability,
-      MOR: mor,
-      MOE: moe,
-      Janka,
+      Janka: mor,
       Endgrain,
       endUses,
     });
@@ -111,11 +109,10 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       color,
       grain,
       Durability,
-      MOR: mor,
-      MOE: moe,
-      Janka,
+      Janka: mor,
       Endgrain,
       endUses,
+      workability
     });
 
     clearForm();
@@ -163,7 +160,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-md m-20">
       <h1 className="text-2xl font-bold mb-4">Edit Species</h1>
       <div className="mb-4">
-    <label className="block text-gray-700">Description</label>
+    <label className="block text-gray-700">Scientific name</label>
     <input
       type="text"
       value={description}
@@ -218,7 +215,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   </div>
 
   <div className="mb-4">
-    <label className="block text-gray-700">Workability</label>
+    <label className="block text-gray-700">Texture</label>
     <input
       type="text"
       value={workability}
@@ -229,7 +226,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   </div>
 
   <div className="mb-4">
-    <label className="block text-gray-700">MOR</label>
+    <label className="block text-gray-700">Janka Hardness</label>
     <input
       type="text"
       value={mor}
@@ -240,29 +237,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   </div>
 
   <div className="mb-4">
-    <label className="block text-gray-700">MOE</label>
-    <input
-      type="text"
-      value={moe}
-      onChange={(e) => setMoe(e.target.value)}
-      className="w-full p-2 border border-gray-300 rounded-md"
-      required
-    />
-  </div>
-
-  <div className="mb-4">
-    <label className="block text-gray-700">Janka Hardness (Side)</label>
-    <input
-      type="text"
-      value={Janka}
-      onChange={(e) => setJanka(e.target.value)}
-      className="w-full p-2 border border-gray-300 rounded-md"
-      required
-    />
-  </div>
-
-  <div className="mb-4">
-    <label className="block text-gray-700">Janka Hardness (End Grain)</label>
+    <label className="block text-gray-700">Average Dried Weight(kg/m³)</label>
     <input
       type="text"
       value={Endgrain}
@@ -318,7 +293,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
 
       {/* Usage Images */}
       <div className="mb-4">
-        <label className="block text-gray-700">Usage Images</label>
+        <label className="block text-gray-700">ProductImages</label>
         <input type="file" multiple onChange={handleUsageImagesChange} />
         {existingUsageImages.length > 0 && (
           <div>
@@ -330,25 +305,9 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
         )}
       </div>
 
-      {endUses.map((endUse, index) => (
-        <EndUseInput 
-          key={index} 
-          index={index} 
-          endUse={endUse} 
-          handleChange={handleChange} 
-        />
-      ))}
+  
 
-      <div className="w-full h-32">
-        <button
-          type="button"
-          onClick={addNewUse}
-          className="w-36 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-        >
-          Add Use
-        </button>
-      </div>
-
+   
       <button
         type="submit"
         className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
