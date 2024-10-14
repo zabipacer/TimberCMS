@@ -22,7 +22,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   const [grain, setGrain] = useState(['']);
   const [Durability, setDurability] = useState(['']);
   const [workability, setWorkability] = useState(['']);
-  const [mor, setMor] = useState(['']);
+
   const [Endgrain, setEndgrain] = useState(['']);
   const [endUses, setEndUses] = useState([{ useName: '', useDescription: '' }]);
 
@@ -35,11 +35,11 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       if (species.commonNames) setCommonNames(species.commonNames);
       if (species.color) setColor(species.color);
       if (species.moe) setMoe(species.moe);
-      if (species.Janka) setJanka(species.Janka);
+      
       if (species.grain) setGrain(species.grain);
       if (species.Durability) setDurability(species.Durability);
       if (species.workability) setWorkability(species.workability);
-      if (species.mor) setMor(species.mor);
+      if (species.Janka) setJanka(species.Janka);
       if (species.Endgrain) setEndgrain(species.Endgrain);
       if (species.endUses) setEndUses(species.endUses);
     }
@@ -70,12 +70,12 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     }
 
     // Handle usage images (replace if new ones are provided)
-    let usageImageUrls = existingUsageImages;
-    if (usageImages.length > 0) {
-      usageImageUrls = [];
-      for (const file of usageImages) {
-        const url = await uploadImage(file, `species/${speciesId}/usageImages/${file.name}`);
-        usageImageUrls.push(url);
+    let usageImageUrls = [...existingUsageImages];
+    for (let index = 0; index < usageImages.length; index++) {
+      if (usageImages[index]) {
+        // If the image is updated, upload the new image
+        const url = await uploadImage(usageImages[index], `species/${speciesId}/usageImages/${usageImages[index].name}`);
+        usageImageUrls[index] = url; // Replace the old image URL with the new one
       }
     }
 
@@ -92,7 +92,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       color,
       grain,
       Durability,
-      Janka: mor,
+      Janka,
       Endgrain,
       endUses,
     });
@@ -109,7 +109,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       color,
       grain,
       Durability,
-      Janka: mor,
+      Janka,
       Endgrain,
       endUses,
       workability
@@ -128,9 +128,9 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     setColor('');
     setGrain('');
     setDurability('');
-    setMor('');
-    setMoe('');
     setJanka('');
+    setMoe('');
+    
     setEndgrain('');
     setGrainImages([]);
     setUsageImages([]);
@@ -229,8 +229,8 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     <label className="block text-gray-700">Janka Hardness</label>
     <input
       type="text"
-      value={mor}
-      onChange={(e) => setMor(e.target.value)}
+      value={Janka}
+      onChange={(e) => setJanka(e.target.value)}
       className="w-full p-2 border border-gray-300 rounded-md"
       required
     />
@@ -293,17 +293,36 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
 
       {/* Usage Images */}
       <div className="mb-4">
-        <label className="block text-gray-700">ProductImages</label>
-        <input type="file" multiple onChange={handleUsageImagesChange} />
-        {existingUsageImages.length > 0 && (
-          <div>
-            <p>Existing Images:</p>
-            {existingUsageImages.map((imgUrl, index) => (
-              <img key={index} src={imgUrl} alt="Usage" className="mt-2 w-32" />
-            ))}
-          </div>
-        )}
-      </div>
+  <label className="block text-gray-700">Usage Images</label>
+  {existingUsageImages.length > 0 ? (
+    <div>
+      <p>Existing Images:</p>
+      {existingUsageImages.map((imgUrl, index) => (
+        <div key={index} className="flex items-center mt-2">
+          <img src={imgUrl} alt={`Usage ${index}`} className="w-32" />
+          <input 
+            type="file" 
+            onChange={(e) => {
+              const updatedImages = [...usageImages];
+              updatedImages[index] = e.target.files[0]; // Update only the specific image
+              setUsageImages(updatedImages);
+            }}
+            className="ml-4"
+          />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p>No existing images</p>
+  )}
+  <input 
+    type="file" 
+    multiple 
+    onChange={handleUsageImagesChange} 
+    className="mt-4"
+    placeholder="Add new usage images"
+  />
+</div>
 
   
 
