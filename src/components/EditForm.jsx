@@ -12,6 +12,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   const [existingGrainImages, setExistingGrainImages] = useState(species?.grainImages || []); // Handle undefined grainImages
   const [usageImages, setUsageImages] = useState([]);
   const [existingUsageImages, setExistingUsageImages] = useState(species?.usageImages || []); // Handle undefined usageImages
+  const [loading, setLoading] = useState(false); 
 
   const [category, setCategory] = useState('');
   const [tagline, setTagline] = useState('');
@@ -48,7 +49,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    toggleForm();
+    setLoading(true)
     const speciesId = species.id;
 
     // Function to upload an image
@@ -117,7 +118,8 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     });
 
     clearForm();
-   
+   setLoading(false)
+   toggleForm()
   };
 
   const clearForm = () => {
@@ -370,16 +372,37 @@ const handleDeleteUsageImage = async (index, imageUrl) => {
 </div>
 
 
-  
-
+ {/* Submit button */}
+ <div className="mt-6">
+        {loading ? (
+          <div className="flex justify-center">
+            <svg
+              className="animate-spin h-6 w-6 text-green-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
+            </svg>
+          </div>
+        ) : (
+          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded-md">Save Changes</button>
+        )}
+</div>
    
-      <button
-        type="submit"
-        className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
-      >
-        Save Changes
-      </button>
-    </form>
+     </form>
   );
 };
 
