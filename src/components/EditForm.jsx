@@ -97,6 +97,7 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       Janka,
       Endgrain,
       endUses,
+      workability
     });
 
     onSubmit({
