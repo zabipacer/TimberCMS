@@ -71,15 +71,16 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       }
     }
 
-    // Handle usage images (replace if new ones are provided)
-    let usageImageUrls = [...existingUsageImages];
-    for (let index = 0; index < usageImages.length; index++) {
-      if (usageImages[index]) {
-        // If the image is updated, upload the new image
-        const url = await uploadImage(usageImages[index], `species/${speciesId}/usageImages/${usageImages[index].name}`);
-        usageImageUrls[index] = url; // Replace the old image URL with the new one
-      }
-    }
+   // Handle usage images (append new ones to the existing array)
+let usageImageUrls = [...existingUsageImages]; // Retain existing images
+for (let index = 0; index < usageImages.length; index++) {
+  if (usageImages[index]) {
+    // If there are new images, upload them and append their URLs
+    const url = await uploadImage(usageImages[index], `species/${speciesId}/usageImages/${usageImages[index].name}`);
+    usageImageUrls.push(url); // Append new images instead of replacing
+  }
+}
+
 
     // Update species in the database
     const speciesRef = dbRef(db, `species/${speciesId}`);
@@ -146,9 +147,9 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   };
 
   const handleUsageImagesChange = (e) => {
-    setUsageImages(Array.from(e.target.files)); // Set new usage images
+    setUsageImages(prevImages => [...prevImages, ...Array.from(e.target.files)]); // Append new usage images to the existing array
   };
-
+  
   const handleChange = (e, index) => {
     const { name, value } = e.target;
     const updatedEndUses = [...endUses];
@@ -186,6 +187,26 @@ const handleDeleteUsageImage = async (index, imageUrl) => {
     console.log(`Deleted image at index ${index}`);
   } catch (error) {
     console.error("Error deleting image:", error);
+  }
+};
+const handleDeleteEndUse = async (index) => {
+  const speciesId = species.id;
+
+  try {
+    // Remove the end use from the state
+    const updatedEndUses = [...endUses];
+    updatedEndUses.splice(index, 1); // Remove the specific use at the index
+    setEndUses(updatedEndUses);
+
+    // Update the database to reflect the deleted end use
+    const speciesRef = dbRef(db, `species/${speciesId}`);
+    await update(speciesRef, {
+      endUses: updatedEndUses,
+    });
+
+    console.log(`Deleted end use at index ${index}`);
+  } catch (error) {
+    console.error("Error deleting end use:", error);
   }
 };
 
@@ -283,12 +304,21 @@ const handleDeleteUsageImage = async (index, imageUrl) => {
 
   
   {endUses.map((endUse, index) => (
-        <EndUseInput 
-          key={index} 
-          index={index} 
-          endUse={endUse} 
-          handleChange={handleChange} 
-        />
+    <div key={index} className="mb-4">
+          <EndUseInput 
+            index={index} 
+            endUse={endUse} 
+            handleChange={handleChange} 
+          />
+          {/* Delete button for each end use */}
+          <button
+            type="button"
+            className="ml-4 text-red-500"
+            onClick={() => handleDeleteEndUse(index)}
+          >
+            Delete Use
+          </button>
+        </div>
       ))}
       <div className="w-full h-32">
         <button
@@ -298,6 +328,7 @@ const handleDeleteUsageImage = async (index, imageUrl) => {
         >
           Add Use
         </button>
+        
       </div>
 
       <div className="mb-4">
