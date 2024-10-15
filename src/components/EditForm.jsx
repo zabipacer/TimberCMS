@@ -147,7 +147,7 @@ for (let index = 0; index < usageImages.length; index++) {
   };
 
   const handleUsageImagesChange = (e) => {
-    setUsageImages(prevImages => [...prevImages, ...Array.from(e.target.files)]); // Append new usage images to the existing array
+    setUsageImages(Array.from(e.target.files)); // Set new usage images
   };
   
   const handleChange = (e, index) => {
