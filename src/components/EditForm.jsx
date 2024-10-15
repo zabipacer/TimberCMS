@@ -145,9 +145,8 @@ for (let index = 0; index < usageImages.length; index++) {
   const handleGrainImagesChange = (e) => {
     setGrainImages(Array.from(e.target.files)); // Allow multiple grain images
   };
-
   const handleUsageImagesChange = (e) => {
-    setUsageImages(Array.from(e.target.files)); // Set new usage images
+    setUsageImages(prevImages => [...prevImages, ...Array.from(e.target.files)]); // Append new usage images to the existing array
   };
   
   const handleChange = (e, index) => {
