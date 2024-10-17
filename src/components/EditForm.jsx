@@ -71,15 +71,27 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
       }
     }
 
-   // Handle usage images (append new ones to the existing array)
-let usageImageUrls = [...existingUsageImages]; // Retain existing images
-for (let index = 0; index < usageImages.length; index++) {
-  if (usageImages[index]) {
-    // If there are new images, upload them and append their URLs
-    const url = await uploadImage(usageImages[index], `species/${speciesId}/usageImages/${usageImages[index].name}`);
-    usageImageUrls.push(url); // Append new images instead of replacing
+    // Handle usage images
+  let usageImageUrls = [];
+  
+  // Upload replaced images
+  for (let i = 0; i < existingUsageImages.length; i++) {
+    if (typeof existingUsageImages[i] === 'string') {
+      usageImageUrls.push(existingUsageImages[i]); // Keep existing URLs
+    } else {
+      // Replace existing image with new one
+      const url = await uploadImage(existingUsageImages[i], `species/${speciesId}/usageImages/${existingUsageImages[i].name}`);
+      usageImageUrls[i] = url;
+    }
   }
-}
+
+  // Add new usage images
+  if (usageImages.length > 0) {
+    for (const file of usageImages) {
+      const url = await uploadImage(file, `species/${speciesId}/usageImages/${file.name}`);
+      usageImageUrls.push(url);
+    }
+  }
 
 
     // Update species in the database
@@ -103,7 +115,7 @@ for (let index = 0; index < usageImages.length; index++) {
 
     onSubmit({
       id: speciesId,
-      name: speciesName,
+      name: speciesName? speciesName : 'no name',
       grainImages: grainImageUrls,
       usageImages: usageImageUrls,
       category,
@@ -146,8 +158,25 @@ for (let index = 0; index < usageImages.length; index++) {
     setGrainImages(Array.from(e.target.files)); // Allow multiple grain images
   };
   const handleUsageImagesChange = (e) => {
-    setUsageImages(prevImages => [...prevImages, ...Array.from(e.target.files)]); // Append new usage images to the existing array
+    const files = Array.from(e.target.files);
+    setUsageImages((prevImages) => [...prevImages, ...files]); // Handle new images separately
   };
+  
+  const replaceUsageImage = (e, index) => {
+    const file = e.target.files[0];
+    if (file) {
+      const updatedExistingImages = [...existingUsageImages];
+      updatedExistingImages[index] = file;  // Replace the image at the specified index
+      setExistingUsageImages(updatedExistingImages);  // Update the existing images array
+    }
+  };
+  const removeUsageImage = (index) => {
+    const updatedImages = [...existingUsageImages];
+    updatedImages.splice(index, 1); // Remove the image at specific index
+    setExistingUsageImages(updatedImages);
+  };
+
+
   
   const handleChange = (e, index) => {
     const { name, value } = e.target;
@@ -160,34 +189,7 @@ for (let index = 0; index < usageImages.length; index++) {
     setEndUses([...endUses, { useName: '', useDescription: '' }]);
   };
  
-// Function to handle the deletion of usage images
-const handleDeleteUsageImage = async (index, imageUrl) => {
-  const speciesId = species.id;
-  
-  try {
-    // Reference to the image in Firebase storage
-    const storage = getStorage();
-    const imageRef = storageRef(storage, imageUrl);
 
-    // Delete the image from Firebase storage
-    await deleteObject(imageRef);
-
-    // Remove the image URL from the state
-    const updatedUsageImages = [...existingUsageImages];
-    updatedUsageImages.splice(index, 1);
-    setExistingUsageImages(updatedUsageImages);
-
-    // Update the database to reflect the deleted image
-    const speciesRef = dbRef(db, `species/${speciesId}`);
-    await update(speciesRef, {
-      usageImages: updatedUsageImages,
-    });
-
-    console.log(`Deleted image at index ${index}`);
-  } catch (error) {
-    console.error("Error deleting image:", error);
-  }
-};
 const handleDeleteEndUse = async (index) => {
   const speciesId = species.id;
 
@@ -356,50 +358,49 @@ const handleDeleteEndUse = async (index) => {
       </div>
 
       {/* Usage Images */}
-     {/* Usage Images */}
-<div className="mb-4">
+ 
+      <div className="mb-4">
   <label className="block text-gray-700">Usage Images</label>
-  {existingUsageImages.length > 0 ? (
-    <div>
-      <p>Existing Images:</p>
+  
+  {existingUsageImages.length > 0 && (
+    <div className="grid grid-cols-3 gap-4 mt-2">
       {existingUsageImages.map((imgUrl, index) => (
-        <div key={index} className="flex items-center mt-2">
-          <img src={imgUrl} alt={`Usage ${index}`} className="w-32" />
-          
-          {/* Delete button next to each image */}
-          <button
-            type="button"
-            className="ml-4 text-red-500"
-            onClick={() => handleDeleteUsageImage(index, imgUrl)}
-          >
-            Delete
-          </button>
-
-          {/* Input for replacing existing image */}
-          <input 
-            type="file" 
-            onChange={(e) => {
-              const updatedImages = [...usageImages];
-              updatedImages[index] = e.target.files[0]; // Update the specific image
-              setUsageImages(updatedImages);
-            }}
-            className="ml-4"
+        <div key={index} className="relative group">
+          <img
+            src={imgUrl}
+            alt={`Usage ${index + 1}`}
+            className="w-full h-32 object-cover rounded-md border border-gray-300 shadow-md"
           />
+          <div className="absolute inset-0 flex justify-center items-center opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 transition-opacity">
+            <button
+              type="button"
+              onClick={() => removeUsageImage(index)}
+              className="px-3 py-1 mr-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+            <input
+              type="file"
+              className="hidden"
+              id={`replace-image-${index}`}
+              onChange={(e) => replaceUsageImage(e, index)}
+            />
+            <label
+              htmlFor={`replace-image-${index}`}
+              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+            >
+              Replace
+            </label>
+          </div>
         </div>
       ))}
     </div>
-  ) : (
-    <p>No existing images</p>
   )}
 
   {/* Add new usage images */}
-  <input 
-    type="file" 
-    multiple 
-    onChange={handleUsageImagesChange} 
-    className="mt-4"
-    placeholder="Add new usage images"
-  />
+  <div className="mt-4">
+    <input type="file" multiple onChange={handleUsageImagesChange} />
+  </div>
 </div>
 
 
