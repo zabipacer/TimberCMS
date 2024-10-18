@@ -62,15 +62,20 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
     };
 
     // Handle grain images
-    let grainImageUrls = existingGrainImages;
+    let grainImageUrls=[];
+    for(let i=0;i<existingGrainImages.length;i++){
+      if(typeof existingGrainImages[i]=='string'){grainImageUrls.push(existingGrainImages[i])}
+      else{const url = await uploadImage(existingGrainImages[i],`species/${speciesId}/grainImages/${existingGrainImages[i].name}`)
+        grainImageUrls[i]=url;
+      }
+    }
     if (grainImages.length > 0) {
-      grainImageUrls = []; // Clear the old images if new ones are provided
       for (const file of grainImages) {
-        const url = await uploadImage(file, `species/${speciesId}/grainImages/${file.name}`);
+        const url = await uploadImage(file, `species/${speciesId}/usageImages/${file.name}`);
         grainImageUrls.push(url);
       }
     }
-
+    
     // Handle usage images
   let usageImageUrls = [];
   
@@ -155,8 +160,25 @@ const EditForm = ({ species, onSubmit, toggleForm }) => {  const [speciesName, s
   };
 
   const handleGrainImagesChange = (e) => {
-    setGrainImages(Array.from(e.target.files)); // Allow multiple grain images
+    const files = Array.from(e.target.files);
+    setGrainImages(files); // Replace with new images, avoiding duplicates
   };
+  
+
+  const replaceGrainImage =(e,index)=>{
+const file = e.target.files[0];
+if(file){
+  const updatedExistingImages=[...existingGrainImages];
+  updatedExistingImages[index]=file;
+  setExistingGrainImages(updatedExistingImages)
+}
+  }
+  const removeGrainImage=(index)=>{
+    const updatedImages = [...existingGrainImages];
+    updatedImages.splice(index, 1); // Remove the image at specific index
+    setExistingGrainImages(updatedImages); // Handle new images separately
+  };
+ 
   const handleUsageImagesChange = (e) => {
     const files = Array.from(e.target.files);
     setUsageImages((prevImages) => [...prevImages, ...files]); // Handle new images separately
@@ -345,17 +367,48 @@ const handleDeleteEndUse = async (index) => {
 
       {/* Grain Images */}
       <div className="mb-4">
-        <label className="block text-gray-700">Grain Images</label>
-        <input type="file" multiple onChange={handleGrainImagesChange} />
-        {existingGrainImages.length > 0 && (
-          <div>
-            <p>Existing Images:</p>
-            {existingGrainImages.map((imgUrl, index) => (
-              <img key={index} src={imgUrl} alt="Grain" className="mt-2 w-32" />
-            ))}
+  <label className="block text-gray-700">Grain Images</label>
+
+  {existingGrainImages.length > 0 && (
+    <div className="grid grid-cols-3 gap-4 mt-2">
+      {existingGrainImages.map((imgUrl, index) => (
+        <div key={index} className="relative group">
+          <img
+            src={imgUrl}
+            alt={`Grain ${index + 1}`}
+            className="w-full h-32 object-cover rounded-md border border-gray-300 shadow-md"
+          />
+          <div className="absolute inset-0 flex justify-center items-center opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 transition-opacity">
+            <button
+              type="button"
+              onClick={() => removeGrainImage(index)}
+              className="px-3 py-1 mr-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+            <input
+              type="file"
+              className="hidden"
+              id={`replace-grain-image-${index}`}
+              onChange={(e) => replaceGrainImage(e, index)}
+            />
+            <label
+              htmlFor={`replace-grain-image-${index}`}
+              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+            >
+              Replace
+            </label>
           </div>
-        )}
-      </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Add new grain images */}
+  <div className="mt-4">
+    <input type="file" multiple onChange={handleGrainImagesChange} />
+  </div>
+</div>
 
       {/* Usage Images */}
  

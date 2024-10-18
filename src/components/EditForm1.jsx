@@ -359,29 +359,49 @@ const handleDeleteEndUse = async (index) => {
 
       {/* Usage Images */}
  
-     <div className="mb-4">
-        <label className="block text-gray-700">Usage Images</label>
-        {existingUsageImages.length > 0 && (
-          <div>
-            <p>Existing Images:</p>
-            {existingUsageImages.map((imgUrl, index) => (
-              <div key={index} className="flex items-center mt-2">
-                <img src={imgUrl} alt={`Usage ${index + 1}`} className="w-32" />
-                <input type="file" onChange={(e) => replaceUsageImage(e, index)} />
-                <button
-                  type="button"
-                  className="ml-4 text-red-500"
-                  onClick={() => removeUsageImage(index)}
-                >
-                  Remove Image
-                </button>
-              </div>
-            ))}
+      <div className="mb-4">
+  <label className="block text-gray-700">Usage Images</label>
+  
+  {existingUsageImages.length > 0 && (
+    <div className="grid grid-cols-3 gap-4 mt-2">
+      {existingUsageImages.map((imgUrl, index) => (
+        <div key={index} className="relative group">
+          <img
+            src={imgUrl}
+            alt={`Usage ${index + 1}`}
+            className="w-full h-32 object-cover rounded-md border border-gray-300 shadow-md"
+          />
+          <div className="absolute inset-0 flex justify-center items-center opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 transition-opacity">
+            <button
+              type="button"
+              onClick={() => removeUsageImage(index)}
+              className="px-3 py-1 mr-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+            <input
+              type="file"
+              className="hidden"
+              id={`replace-image-${index}`}
+              onChange={(e) => replaceUsageImage(e, index)}
+            />
+            <label
+              htmlFor={`replace-image-${index}`}
+              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+            >
+              Replace
+            </label>
           </div>
-        )}
-        <input type="file" multiple onChange={handleUsageImagesChange} />
-        <p className="text-gray-500">Add new images or replace existing ones above.</p>
-      </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Add new usage images */}
+  <div className="mt-4">
+    <input type="file" multiple onChange={handleUsageImagesChange} />
+  </div>
+</div>
 
 
  {/* Submit button */}
